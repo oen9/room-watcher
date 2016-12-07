@@ -9,7 +9,7 @@ class Webservice(implicit fm: Materializer, system: ActorSystem) extends Directi
   def route =
     get {
       pathSingleSlash {
-        getFromResource("index.html")
+        getFromResource("web/index.html")
       } ~
         // Scala-JS puts them in the root of the resource directory per default,
         // so that's where we pick them up
@@ -17,15 +17,4 @@ class Webservice(implicit fm: Materializer, system: ActorSystem) extends Directi
         path("frontend-fastopt.js")(getFromResource("frontend-fastopt.js"))
     } ~
       getFromResourceDirectory("web")
-
-  def reportErrorsFlow[T]: Flow[T, T, Any] =
-    Flow[T]
-      .transform(() ⇒ new PushStage[T, T] {
-        def onPush(elem: T, ctx: Context[T]): SyncDirective = ctx.push(elem)
-
-        override def onUpstreamFailure(cause: Throwable, ctx: Context[T]): TerminationDirective = {
-          println(s"WS stream failed with $cause")
-          super.onUpstreamFailure(cause, ctx)
-        }
-      })
 }
